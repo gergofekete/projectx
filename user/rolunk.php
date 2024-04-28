@@ -95,7 +95,11 @@ if ($cartStmt = mysqli_prepare($con, $cartQuery)) {
                 </div>
                 <div class="column">
                     <div class="description">
-                        <p id="szoveg1" class="text"></p>
+                        <p id="szoveg1" class="text">Üdvözöljük a Gumiszervízben, ahol gumiabroncsaink széles
+                            választékát kínáljuk webshopunkban és helyszíni szervizünkben egyaránt. Legyen szó új
+                            abroncs vásárlásról vagy szakszerű szerelésről, nálunk megtalálja a megfelelő szolgáltatást.
+                            Böngésszen kényelmesen online, vagy látogasson el műhelyünkbe személyesen. Minőség és
+                            megbízhatóság – minden, amire autója és Ön számíthat. Forduljon hozzánk bizalommal!</p>
                         <p id="szoveg2" class="text" style="display: none;">Szervízünk évtizedek óta biztosítja
                             ügyfeleink számára a gyors, megbízható és rugalmas kerék, illetve gumiabroncs cseréket.
                             ezen kívül még igény esetén átvizsgáljuk a kerék levétele során láthatóvá váló alkatrészeket

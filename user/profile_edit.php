@@ -53,8 +53,8 @@ if (!$user) {
     <header>
         <nav class="nav" id="navbar">
             <ul class="nav__list" id="navlinkitems">
-                <li class="nav__item main-item" style=" position:relative; right: 700px">
-                    <span class="workspace-title"><a href="./index.php" class="nav__link" id="home">Műhely</a></span>
+                <li class="nav__item main-item" style=" position:relative; right: 500px">
+                    <span class="workspace-title"><a href="index.php" class="nav__link" id="home">Műhely</a></span>
                 </li>
                 <li class="nav__item">
                     <a href="./rolunk.php" class="nav__link" id="about">Rólunk</a>
@@ -63,10 +63,14 @@ if (!$user) {
                     <a href="./vasarlas.php" class="nav__link" id="service">Webshop</a>
                 </li>
                 <li class="nav__item">
-                    <a href="kosar.php" class="nav__link" id="cart">Kosár</a>
+                    <a href="./kosar.php" class="nav__link" id="cart">Kosár <span
+                            class="cart-count"><?= $itemCount ?></span></a>
                 </li>
                 <li class="nav__item">
-                    <a href="profile.php" class="nav__link" id="contact">Profilom</a>
+                    <a href="./rendeleseim.php" class="nav__link" id="orders">Rendeléseim</a>
+                </li>
+                <li class="nav__item">
+                    <a href="./profile.php" class="nav__link" id="contact">Profilom</a>
                 </li>
                 <li class="nav_item">
                     <a href="../logout.php" class="nav__link" style="color:red" id="logout">Kijelentkezés</a>
