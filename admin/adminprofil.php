@@ -1,16 +1,15 @@
 <?php
 include('../session.php');
 access("ADMIN");
-include('../connect.php');
+
+include('../php/config.php');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $oldpassword = $_POST['oldpassword'];
     $newpassword = $_POST['newpassword'];
     $newpassword2 = $_POST['newpassword2'];
 
-    $login_user = $_SESSION['bejelentkezett'];
-    $login_email = $_SESSION['bejelentkezett_email'];
-    echo $login_email;
+    $login_user = $_SESSION['loggedin'];
     $sql = mysqli_query($connect, "SELECT * FROM user WHERE (username = '$login_user' OR email = '$login_email')");
     $row = mysqli_fetch_assoc($sql);
     $username = $row['username'];

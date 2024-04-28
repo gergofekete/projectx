@@ -3,6 +3,22 @@ include ('../session.php');
 access("USER");
 include ('../php/config.php');
 
+$user = mysqli_query($con, "SELECT id from users WHERE uname = '$_SESSION[loggedin]'");
+$user_r = mysqli_fetch_array($user);
+
+$user_id = $user_r['id'];
+
+$cartQuery = "SELECT COUNT(*) as itemCount FROM kosar WHERE kosarbane = 0 AND user_id = ?";
+if ($cartStmt = mysqli_prepare($con, $cartQuery)) {
+    mysqli_stmt_bind_param($cartStmt, "i", $user_id);
+    mysqli_stmt_execute($cartStmt);
+    mysqli_stmt_bind_result($cartStmt, $itemCount);
+    mysqli_stmt_fetch($cartStmt);
+    mysqli_stmt_close($cartStmt);
+} else {
+    $itemCount = 0; // Default to 0 in case the query fails
+}
+
 $uname = $_SESSION['loggedin'];
 $query = "SELECT uname, email, fname, lname FROM users WHERE uname = '$uname'";
 $result = mysqli_query($con, $query);

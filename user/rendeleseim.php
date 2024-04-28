@@ -1,10 +1,26 @@
 <?php
 include ('../session.php');
-access("ADMIN");
+access("USER");
 
 include ('../php/config.php');
 
-$rendelesek = mysqli_query($con, "SELECT * FROM rendeles GROUP BY user_id, date ORDER BY date DESC"); // name, date, username
+$user = mysqli_query($con, "SELECT id from users WHERE uname = '$_SESSION[loggedin]'");
+$user_r = mysqli_fetch_array($user);
+
+$user_id = $user_r['id'];
+
+$cartQuery = "SELECT COUNT(*) as itemCount FROM kosar WHERE kosarbane = 0 AND user_id = ?";
+if ($cartStmt = mysqli_prepare($con, $cartQuery)) {
+    mysqli_stmt_bind_param($cartStmt, "i", $user_id);
+    mysqli_stmt_execute($cartStmt);
+    mysqli_stmt_bind_result($cartStmt, $itemCount);
+    mysqli_stmt_fetch($cartStmt);
+    mysqli_stmt_close($cartStmt);
+} else {
+    $itemCount = 0; // Default to 0 in case the query fails
+}
+
+$rendelesek = mysqli_query($con, "SELECT * FROM rendeles WHERE user_id = '$user_id' GROUP BY date ORDER BY date DESC"); // name, date, username
 ?>
 
 <!DOCTYPE html>
@@ -51,43 +67,36 @@ $rendelesek = mysqli_query($con, "SELECT * FROM rendeles GROUP BY user_id, date 
     <header>
         <nav class="nav" id="navbar">
             <ul class="nav__list" id="navlinkitems">
-                <li class="nav__item">
-                    <a href="./adminlist.php" class="nav__link" id="webshopadmin">Termékek</a>
+                <li class="nav__item main-item" style=" position:relative; right: 500px">
+                    <span class="workspace-title"><a href="index.php" class="nav__link" id="home">Műhely</a></span>
                 </li>
                 <li class="nav__item">
-                    <a href="./upload.php" class="nav__link" id="webshopadmin">Új termék</a>
+                    <a href="./rolunk.php" class="nav__link" id="about">Rólunk</a>
                 </li>
                 <li class="nav__item">
-                    <a href="./rendelesek.php" class="nav__link" id="orders">Rendelések</a>
+                    <a href="./vasarlas.php" class="nav__link" id="service">Webshop</a>
+                </li>
+                <li class="nav__item">
+                    <a href="./kosar.php" class="nav__link" id="cart">Kosár <span
+                            class="cart-count"><?= $itemCount ?></span></a>
+                </li>
+                <li class="nav__item">
+                    <a href="./rendeleseim.php" class="nav__link" id="orders">Rendeléseim</a>
+                </li>
+                <li class="nav__item">
+                    <a href="./profile.php" class="nav__link" id="contact">Profilom</a>
                 </li>
                 <li class="nav_item">
                     <a href="../logout.php" class="nav__link" style="color:red" id="logout">Kijelentkezés</a>
                 </li>
             </ul>
-
         </nav>
     </header>
     <div class="table-wrapper">
         <div class="table-title">
             <div class="row">
                 <div class="col-sm-6">
-                    <h2><b>Rendelések</b></h2>
-                </div>
-                <div class="col-sm-6">
-                    <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-info active">
-                            <input type="radio" name="status" value="0" checked="checked">Összes
-                        </label>
-                        <label class="btn btn-success">
-                            <input type="radio" name="status" value="1"> Feldolgozott
-                        </label>
-                        <label class="btn btn-warning">
-                            <input type="radio" name="status" value="2"> Feldolgozásra vár
-                        </label>
-                        <label class="btn btn-danger">
-                            <input type="radio" name="status" value="3"> Törölt
-                        </label>
-                    </div>
+                    <h2><b>Rendeléseim</b></h2>
                 </div>
             </div>
         </div>
@@ -98,7 +107,6 @@ $rendelesek = mysqli_query($con, "SELECT * FROM rendeles GROUP BY user_id, date 
                     <th>Megrendelő neve</th>
                     <th>Átvétel</th>
                     <th>Státusz</th>
-                    <th>Megtekintés</th>
                 </tr>
             </thead>
             <tbody>
@@ -118,11 +126,14 @@ $rendelesek = mysqli_query($con, "SELECT * FROM rendeles GROUP BY user_id, date 
                                 } else {
                                     echo "Kiszállítás";
                                 } ?></td>
-                                <td><span class="label label-success">Feldolgozva</span></td>
+                                <td><span class="label label-success"><?php if($row['szallitas'] == 0) {
+                                    echo 'Átvehető';
+                                } else if($row['szallitas'] == 1) {
+                                    echo 'Feladva a futárnak';
+                                } ?></span></td>
                                 <form action="./rendeleskezeles.php" method="post">
                                     <input type="hidden" name="date" value="<?php echo $datum; ?>">
                                     <input type="hidden" name="uid" value="<?php echo $uid; ?>">
-                                    <td><button type="submit" class="btn btn-sm manage">Megtekintés</button></td>
                                 </form>
                             </tr>
                             <?php
@@ -139,7 +150,6 @@ $rendelesek = mysqli_query($con, "SELECT * FROM rendeles GROUP BY user_id, date 
                                     <form action="./rendeleskezeles.php" method="post">
                                         <input type="hidden" name="date" value="<?php echo $datum; ?>">
                                         <input type="hidden" name="uid" value="<?php echo $uid; ?>">
-                                        <td><button type="submit" class="btn btn-sm manage">Megtekintés</button></td>
                                     </form>
                                 </tr>
                             <?php
@@ -156,7 +166,6 @@ $rendelesek = mysqli_query($con, "SELECT * FROM rendeles GROUP BY user_id, date 
                                         <form action="./rendeleskezeles.php" method="post">
                                             <input type="hidden" name="date" value="<?php echo $datum; ?>">
                                             <input type="hidden" name="uid" value="<?php echo $uid; ?>">
-                                            <td><button type="submit" class="btn btn-sm manage">Megtekintés</button></td>
                                         </form>
                                     </tr>
                             <?php

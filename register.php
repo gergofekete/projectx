@@ -32,7 +32,7 @@ if (isset($_POST['register'])) {
             $stmt = $con->prepare("INSERT INTO users (uname, lname, fname, email, password) VALUES (?, ?, ?, ?, ?)");
             $stmt->bind_param("sssss", $uname, $lname, $fname, $email, $password);
             if ($stmt->execute()) {
-                header("Location: ../projektmunka/login.php");
+                header("Location: ./login.php");
                 exit;
             } else {
                 $error = "Hiba történt a regisztráció során.";

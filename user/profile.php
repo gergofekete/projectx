@@ -1,30 +1,30 @@
 <?php
 
-include('../session.php');
+include ('../session.php');
 access("USER");
 
-
-// session_start();
-
-
-// if (!isset($_SESSION['user_id'])) {
-//     header('Location: ../login.php');
-//     exit();
-// }
-
 include ('../php/config.php');
+
+$user = mysqli_query($con, "SELECT id from users WHERE uname = '$_SESSION[loggedin]'");
+$user_r = mysqli_fetch_array($user);
+
+$user_id = $user_r['id'];
+
+$cartQuery = "SELECT COUNT(*) as itemCount FROM kosar WHERE kosarbane = 0 AND user_id = ?";
+if ($cartStmt = mysqli_prepare($con, $cartQuery)) {
+    mysqli_stmt_bind_param($cartStmt, "i", $user_id);
+    mysqli_stmt_execute($cartStmt);
+    mysqli_stmt_bind_result($cartStmt, $itemCount);
+    mysqli_stmt_fetch($cartStmt);
+    mysqli_stmt_close($cartStmt);
+} else {
+    $itemCount = 0; // Default to 0 in case the query fails
+}
 
 $uname = $_SESSION['loggedin'];
 $query = "SELECT uname, email, fname, lname FROM users WHERE uname = '$uname'";
 $result = mysqli_query($con, $query);
-$user = mysqli_fetch_assoc( $result );
-// $stmt = $con->prepare($query);
-// $stmt->bind_param("i", $uname);
-// $stmt->execute();
-// $result = $stmt->get_result();
-// $user = $result->fetch_assoc();
-
-// $stmt->close();
+$user = mysqli_fetch_assoc($result);
 
 if (!$user) {
     echo "Nincs ilyen felhasználó.";
@@ -56,8 +56,8 @@ if (!$user) {
         <nav class="nav" id="navbar">
 
             <ul class="nav__list" id="navlinkitems">
-                <li class="nav__item main-item" style=" position:relative; right: 700px">
-                    <span class="workspace-title"><a href="./index.php" class="nav__link" id="home">Műhely</a></span>
+                <li class="nav__item main-item" style=" position:relative; right: 500px">
+                    <span class="workspace-title"><a href="index.php" class="nav__link" id="home">Műhely</a></span>
                 </li>
                 <li class="nav__item">
                     <a href="./rolunk.php" class="nav__link" id="about">Rólunk</a>
@@ -66,10 +66,14 @@ if (!$user) {
                     <a href="./vasarlas.php" class="nav__link" id="service">Webshop</a>
                 </li>
                 <li class="nav__item">
-                    <a href="kosar.php" class="nav__link" id="cart">Kosár</a>
+                    <a href="./kosar.php" class="nav__link" id="cart">Kosár <span
+                            class="cart-count"><?= $itemCount ?></span></a>
                 </li>
                 <li class="nav__item">
-                    <a href="profile.php" class="nav__link" id="contact">Profilom</a>
+                    <a href="./rendeleseim.php" class="nav__link" id="orders">Rendeléseim</a>
+                </li>
+                <li class="nav__item">
+                    <a href="./profile.php" class="nav__link" id="contact">Profilom</a>
                 </li>
                 <li class="nav_item">
                     <a href="../logout.php" class="nav__link" style="color:red" id="logout">Kijelentkezés</a>

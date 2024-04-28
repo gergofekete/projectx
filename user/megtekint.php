@@ -1,9 +1,25 @@
 <?php
 
-include('../session.php');
+include ('../session.php');
 access("USER");
 
 include ('../php/config.php');
+
+$user = mysqli_query($con, "SELECT id from users WHERE uname = '$_SESSION[loggedin]'");
+$user_r = mysqli_fetch_array($user);
+
+$user_id = $user_r['id'];
+
+$cartQuery = "SELECT COUNT(*) as itemCount FROM kosar WHERE kosarbane = 0 AND user_id = ?";
+if ($cartStmt = mysqli_prepare($con, $cartQuery)) {
+    mysqli_stmt_bind_param($cartStmt, "i", $user_id);
+    mysqli_stmt_execute($cartStmt);
+    mysqli_stmt_bind_result($cartStmt, $itemCount);
+    mysqli_stmt_fetch($cartStmt);
+    mysqli_stmt_close($cartStmt);
+} else {
+    $itemCount = 0; // Default to 0 in case the query fails
+}
 
 $termek_id = $_POST['termekId'];
 
@@ -50,7 +66,8 @@ $kat_r = mysqli_fetch_assoc($kat);
                     <a href="./vasarlas.php" class="nav__link" id="service">Webshop</a>
                 </li>
                 <li class="nav__item">
-                    <a href="./kosar.php" class="nav__link" id="cart">Kosár</a>
+                    <a href="./kosar.php" class="nav__link" id="cart">Kosár <span
+                            class="cart-count"><?= $itemCount ?></span></a>
                 </li>
                 <li class="nav__item">
                     <a href="./profile.php" class="nav__link" id="contact">Profilom</a>
@@ -96,35 +113,49 @@ $kat_r = mysqli_fetch_assoc($kat);
                     </dl> <!-- item-property-hor .// -->
                     <dl class="param param-feature">
                         <dt>Elérhető mennyiség:</dt>
-                        <dd><?php echo $termek_r['mennyiseg'] . " db" ?></dd>
+                        <dd> <?php
+                        if ($termek_r['mennyiseg'] > 0) {
+                            echo $termek_r['mennyiseg'] . " db";
+                        } else {
+                            echo "Nincs raktáron";
+                        }
+                        ?></dd>
                     </dl> <!-- item-property-hor .// -->
 
                     <hr>
-                    <form action="add_to_cart.php" method="POST">
-                        <input type="hidden" name="termekId" value="<?php echo $termek_r['termek_id']; ?>">
-                        <!-- <input type="hidden" name="userId" value="{USER_ID_HERE}"> Replace {USER_ID_HERE} with the actual user ID -->
-                        <input type="hidden" name="termekNev" value="<?php echo $termek_r['nev']; ?>">
-                        <input type="hidden" name="szelesseg" value="<?php echo $termek_r['szelesseg']; ?>">
-                        <input type="hidden" name="darab" value="<?php echo $termek_r['mennyiseg']; ?>">
-                        <input type="hidden" name="ar" value="<?php echo $termek_r['ar']; ?>">
-                        <div class="row">
-                            <div class="col-sm-5">
-                                <dl class="param param-inline">
-                                    <dt>Kívánt mennyiség: </dt>
-                                    <dd>
-                                        <select name="mennyiseg" style="width: 65px">
-                                            <?php for ($i = 1; $i <= $termek_r['mennyiseg']; $i++): ?>
-                                                <option value="<?php echo $i ?>"><?php echo $i ?></option>
-                                            <?php endfor; ?>
-                                        </select> db
-                                    </dd>
-                                </dl>
+                    <?php if ($termek_r['mennyiseg'] > 0): ?>
+                        <form action="add_to_cart.php" method="POST">
+                            <input type="hidden" name="termekId" value="<?php echo $termek_r['termek_id']; ?>">
+                            <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
+                            <!-- <input type="hidden" name="userId" value="{USER_ID_HERE}"> Replace {USER_ID_HERE} with the actual user ID -->
+                            <input type="hidden" name="termekNev" value="<?php echo $termek_r['nev']; ?>">
+                            <input type="hidden" name="szelesseg" value="<?php echo $termek_r['szelesseg']; ?>">
+                            <input type="hidden" name="darab" value="<?php echo $termek_r['mennyiseg']; ?>">
+                            <input type="hidden" name="ar" value="<?php echo $termek_r['ar']; ?>">
+                            <div class="row">
+                                <div class="col-sm-5">
+                                    <dl class="param param-inline">
+                                        <dt>Kívánt mennyiség: </dt>
+                                        <dd>
+                                            <select name="mennyiseg" style="width: 65px">
+                                                <?php for ($i = 1; $i <= $termek_r['mennyiseg']; $i++): ?>
+                                                    <option value="<?php echo $i ?>"><?php echo $i ?></option>
+                                                <?php endfor; ?>
+                                            </select> db
+                                        </dd>
+                                    </dl>
+                                </div>
                             </div>
-                        </div>
-                        <button type="submit" class="btn btn-lg btn-outline-primary text-uppercase">
-                            <i class="fas fa-shopping-cart"></i> Add to cart
+                            <button type="submit" class="btn btn-lg btn-outline-primary text-uppercase">
+                                <i class="fas fa-shopping-cart"></i> Add to cart
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <p>Kérjük, rendeljen emailben vagy telefonon.</p>
+                        <button class="btn btn-lg text-uppercase" style="color:gray; background-color:lightgray;" disabled>
+                            <i class="fas fa-shopping-cart"></i> Kosárba
                         </button>
-                    </form>
+                    <?php endif; ?>
                 </article> <!-- card-body.// -->
             </aside> <!-- col.// -->
         </div> <!-- row.// -->

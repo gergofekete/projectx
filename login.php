@@ -22,11 +22,13 @@ if (isset($_POST['login'])) {
 
     if($acount == 1) {
         $_SESSION['loggedin'] = $uname;
+        $_SESSION['user_id'] = $u_row['id'];
         $_SESSION['access'] = 1;
         $error = "";
         header("location: ./admin/upload.php");
     } else if($ucount == 1) {
         $_SESSION['loggedin'] = $uname;
+        $_SESSION['user_id'] = $a_row['id'];
         $_SESSION['access'] = 0;
         $error = "";
         header("location: ./user/index.php");

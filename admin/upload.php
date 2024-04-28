@@ -65,8 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <header>
         <nav class="nav" id="navbar">
             <ul class="nav__list" id="navlinkitems">
+            <li class="nav__item">
+                    <a href="./adminlist.php" class="nav__link" id="webshopadmin">Termékek</a>
+                </li>
                 <li class="nav__item">
-                    <a href="./upload.php" class="nav__link" id="webshopadmin">Webshop (ADMIN)</a>
+                    <a href="./upload.php" class="nav__link" id="webshopadmin">Új termék</a>
                 </li>
                 <li class="nav__item">
                     <a href="./rendelesek.php" class="nav__link" id="orders">Rendelések</a>

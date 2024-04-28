@@ -1,25 +1,7 @@
 <?php
 include ('../session.php');
-access("USER");
-
-
+access("ADMIN");
 include ('../php/config.php');
-
-$user = mysqli_query($con, "SELECT id from users WHERE uname = '$_SESSION[loggedin]'");
-$user_r = mysqli_fetch_array($user);
-
-$user_id = $user_r['id'];
-
-$cartQuery = "SELECT COUNT(*) as itemCount FROM kosar WHERE kosarbane = 0 AND user_id = ?";
-if ($cartStmt = mysqli_prepare($con, $cartQuery)) {
-    mysqli_stmt_bind_param($cartStmt, "i", $user_id);
-    mysqli_stmt_execute($cartStmt);
-    mysqli_stmt_bind_result($cartStmt, $itemCount);
-    mysqli_stmt_fetch($cartStmt);
-    mysqli_stmt_close($cartStmt);
-} else {
-    $itemCount = 0;
-}
 
 $kategoria_query = mysqli_query($con, "SELECT * FROM kategoria");
 $kategoria_items = [];
@@ -42,9 +24,23 @@ if (isset($_POST['keres']) && ($_POST['termek_neve'] != '' || $_POST['kategoria'
         $query .= " AND kategoria_id = '$termek_kategoria'";
     }
 }
+$user = mysqli_query($con, "SELECT id from users WHERE uname = '$_SESSION[loggedin]'");
+$user_r = mysqli_fetch_array($user);
 
 $query .= " ORDER BY termek_id DESC";
 $termekek = mysqli_query($con, $query);
+$user_id = $user_r['id'];
+
+$cartQuery = "SELECT COUNT(*) as itemCount FROM kosar WHERE kosarbane = 0 AND user_id = ?";
+if ($cartStmt = mysqli_prepare($con, $cartQuery)) {
+    mysqli_stmt_bind_param($cartStmt, "i", $user_id);
+    mysqli_stmt_execute($cartStmt);
+    mysqli_stmt_bind_result($cartStmt, $itemCount);
+    mysqli_stmt_fetch($cartStmt);
+    mysqli_stmt_close($cartStmt);
+} else {
+    $itemCount = 0; // Default to 0 in case the query fails
+}
 ?>
 
 <!DOCTYPE html>
@@ -66,11 +62,13 @@ $termekek = mysqli_query($con, $query);
 
     <!------style sheets-->
     <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="buy.css">
+    <link rel="stylesheet" href="../user/buy.css">
 </head>
 
 <body>
     <?php
+    include ('../php/config.php');
+
     if (isset($_GET['error']) && $_GET['error'] == 'alreadyInCart') {
         echo "<div id='alertBox' style='position: fixed; top: 100px; background: red; border: 1px solid #ccc; padding: 10px; z-index: 2000;'>
                 Ezt a terméket már hozzáadatad egyszer a kosaradhoz
@@ -82,24 +80,14 @@ $termekek = mysqli_query($con, $query);
     <header>
         <nav class="nav" id="navbar">
             <ul class="nav__list" id="navlinkitems">
-                <li class="nav__item main-item" style=" position:relative; right: 500px">
-                    <span class="workspace-title"><a href="index.php" class="nav__link" id="home">Műhely</a></span>
+                <li class="nav__item">
+                    <a href="./adminlist.php" class="nav__link" id="webshopadmin">Termékek</a>
                 </li>
                 <li class="nav__item">
-                    <a href="./rolunk.php" class="nav__link" id="about">Rólunk</a>
+                    <a href="./upload.php" class="nav__link" id="webshopadmin">Új termék</a>
                 </li>
                 <li class="nav__item">
-                    <a href="./vasarlas.php" class="nav__link" id="service">Webshop</a>
-                </li>
-                <li class="nav__item">
-                    <a href="./kosar.php" class="nav__link" id="cart">Kosár <span
-                            class="cart-count"><?= $itemCount ?></span></a>
-                </li>
-                <li class="nav__item">
-                    <a href="./rendeleseim.php" class="nav__link" id="orders">Rendeléseim</a>
-                </li>
-                <li class="nav__item">
-                    <a href="./profile.php" class="nav__link" id="contact">Profilom</a>
+                    <a href="./rendelesek.php" class="nav__link" id="orders">Rendelések</a>
                 </li>
                 <li class="nav_item">
                     <a href="../logout.php" class="nav__link" style="color:red" id="logout">Kijelentkezés</a>
@@ -168,11 +156,19 @@ $termekek = mysqli_query($con, $query);
                         <div class="panel-body text-center">
                             <p class="p-info">Leírás: &nbsp; <?php echo $shortDescription; ?></p>
                         </div>
-                        <?php $termek_id = $row['termek_id']; ?>
                         <div class="panel-body text-center">
-                            <form method="post" action="../user/megtekint.php">
-                                <input type="hidden" name="termekId" value="<?php echo $termek_id; ?>">
-                                <input type="submit" class="btn sub-btn" name="szerk" id="szerk" value="Megtekintés">
+                            <form method="post" action="szerkesztes.php">
+                                <?php $termek_id = $row['termek_id']; ?>
+                                <input type="hidden" name="termek_id" value="<?php echo $termek_id; ?>">
+                                <input type="submit" class="btn sub-btn" style="background-color: #0066ff" name="changeS"
+                                    value="Szerkesztés">
+                            </form>
+
+                            <form method="post" action="delete_product.php">
+                                <?php $termek_id = $row['termek_id']; ?>
+                                <input type="hidden" name="termek_id" value="<?php echo $termek_id; ?>">
+                                <input type="submit" class="btn sub-btn" style="background-color:red" name="delete"
+                                    value="Törlés">
                             </form>
                         </div>
                     </div>
